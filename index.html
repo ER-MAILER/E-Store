@@ -168,14 +168,15 @@
     
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
       margin-top: 20px;
     }
     
-    @media (max-width: 768px) {
+    @media (max-width: 480px) {
       .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
       }
     }
     
@@ -186,6 +187,8 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.05);
       transition: all 0.3s ease;
       border: 1px solid var(--light-gray);
+      display: flex;
+      flex-direction: column;
     }
     
     .product-card:hover {
@@ -196,43 +199,48 @@
     
     .product-image {
       width: 100%;
-      height: 120px;
+      height: 100px;
       object-fit: cover;
       background-color: var(--light-gray);
     }
     
     .product-body {
-      padding: 15px;
+      padding: 12px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
     
     .product-title {
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 600;
       margin-bottom: 8px;
       color: var(--dark);
+      line-height: 1.3;
     }
     
     .product-price {
       color: var(--primary);
       font-weight: 700;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
     }
     
     .quantity-control {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 10px;
+      margin-top: auto;
     }
     
     .quantity-btn {
-      width: 30px;
-      height: 30px;
+      width: 25px;
+      height: 25px;
       border-radius: 50%;
       background: var(--primary);
       color: var(--white);
       border: none;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
       display: flex;
@@ -254,8 +262,9 @@
     
     .quantity-value {
       font-weight: 600;
-      min-width: 30px;
+      min-width: 25px;
       text-align: center;
+      font-size: 0.9rem;
     }
     
     .summary-item {
@@ -557,7 +566,7 @@
                        (now.getMonth() + 1).toString().padStart(2, '0') + 
                        now.getDate().toString().padStart(2, '0');
       const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-      document.getElementById('orderId').value = `PRIME-${datePart}-${randomPart}`;
+      document.getElementById('orderId').value = `E-Store_${datePart}-${randomPart}`;
     }
 
     function setOrderDate() {
@@ -707,62 +716,88 @@
       try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
-        // Set font
-        doc.setFont("helvetica");
-        
-        // Colors
-        const primaryColor = [67, 97, 238];
-        const secondaryColor = [247, 37, 133];
-        const textColor = [33, 37, 41];
-        
-        // Header
-        doc.setFillColor(...primaryColor);
-        doc.rect(0, 0, 210, 30, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(20);
-        doc.setFont("helvetica", "bold");
-        doc.text('Prime E-Store', 15, 20);
-        
-        doc.setFontSize(20);
-        doc.text('INVOICE', 180, 20, { align: 'right' });
-        
-        // Order info
-        doc.setTextColor(...textColor);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        
+    
+        // Get order information
         const shopName = document.getElementById('shopName').value;
         const phone = document.getElementById('phone').value;
         const address = document.getElementById('address').value;
         const orderId = document.getElementById('orderId').value;
         const orderDate = document.getElementById('orderDate').value;
-        
+    
+        // Set font and colors
+        doc.setFont("helvetica");
+        const primaryColor = [67, 97, 238];
+        const textColor = [33, 37, 41];
+    
+        // Header Background
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 30, 'F');
+
+        // Left Aligned - Company Info
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text('PRIME E-STORE', 15, 12);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text('29. Sir Iqbal Road.', 15, 18);
+        doc.text('Picture Palace More Khulna. 9100', 15, 24);
+
+        // Right Aligned - Invoice Info
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text('INVOICE', 195, 12, { align: 'right' });
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text('Email: er.mailer2@aol.com', 195, 18, { align: 'right' });
+        doc.text('Phone: +880 179-554-1326', 195, 24, { align: 'right' });
+
+        // Invoice Details Section
         let yPos = 40;
-        doc.text(`Order ID: ${orderId}`, 15, yPos);
-        doc.text(`Date: ${orderDate}`, 15, yPos + 5);
-        
-        doc.text(`Customer: ${shopName}`, 120, yPos);
-        doc.text(`Phone: ${phone}`, 120, yPos + 5);
-        
-        if (address) {
-          doc.text(`Address: ${address}`, 120, yPos + 10);
-          yPos += 5;
+        doc.setTextColor(...textColor);
+        doc.setFontSize(10);
+    
+        // Left Aligned - Invoice Details
+        doc.text(`Invoice: ${orderId}`, 15, yPos);
+        doc.text(`Date: ${orderDate}`, 15, yPos + 6);
+
+        // Right Aligned - Customer Info
+        doc.setFont("helvetica", "bold");
+
+        // BILL TO: and shop name in same line
+        let billToText = 'BILL TO: ' + (shopName && shopName.trim() !== '' ? shopName : '');
+        doc.text(billToText, 195, yPos, { align: 'right' });
+        doc.setFont("helvetica", "normal");
+
+        // Initialize vertical position for customer info
+        let infoY = yPos + 6;
+
+        // Phone (always shown)
+        doc.text(`Phone: ${phone}`, 195, infoY, { align: 'right' });
+        infoY += 6;
+
+        // Address (if exists)
+        if (address && address.trim() !== '') {
+          doc.text(`Address: ${address}`, 195, infoY, { align: 'right' });
+          infoY += 6;
         }
-        
+
+        // Update yPos for next section
+        yPos = infoY;
+
         // Line separator
-        yPos += 15;
+        yPos += 4; // Small space before the line
         doc.setDrawColor(200, 200, 200);
         doc.setLineWidth(0.5);
         doc.line(15, yPos, 195, yPos);
-        
-        // Items header
+
+        // Items Table Header
         yPos += 10;
-        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
         doc.text('ITEMS', 15, yPos);
-        
         doc.text('QTY', 120, yPos);
         doc.text('PRICE', 140, yPos);
         doc.text('TOTAL', 170, yPos);
@@ -848,10 +883,10 @@
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
         doc.text('Thank you for your business!', 105, yPos, { align: 'center' });
-        doc.text('Prime E-Store - Quality Electronic Components', 105, yPos + 5, { align: 'center' });
+        doc.text('Prime E-Store - Quality Electronic Components | +880 179-554-1326', 105, yPos + 5, { align: 'center' });
         
         // Save the PDF
-        const fileName = `EStore_Invoice_${orderId}.pdf`;
+        const fileName = `${orderId}.pdf`;
         doc.save(fileName);
         
       } catch (error) {
