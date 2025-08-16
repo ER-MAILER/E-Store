@@ -1251,13 +1251,15 @@
       password: 'Eyasin'
     };
 
-    // Initialize the app
+    // Initialize the app with login check
     function init() {
-      loadOrdersFromFirebase();
-      renderProducts();
-      updateTotal();
-      generateOrderId();
-      setOrderDate();
+        checkLoginState(); // Check for saved login state
+        
+        loadOrdersFromFirebase();
+        renderProducts();
+        updateTotal();
+        generateOrderId();
+        setOrderDate();
       
       // Add event listeners
       document.getElementById('discount').addEventListener('input', updateTotal);
@@ -1332,7 +1334,10 @@
         const data = snapshot.val();
         if (data) {
           Object.keys(data).forEach(key => {
-            orders.push(data[key]);
+            orders.push({
+              id: key, // Use Firebase key as order ID
+              ...data[key]
+            });
           });
         }
         
@@ -1350,27 +1355,6 @@
           loadAdminDashboard();
         }
       });
-    }
-
-    // Save order to Firebase
-    function saveOrderToFirebase(order) {
-      return new Promise((resolve, reject) => {
-        const newOrderRef = database.ref('orders').push();
-        order.id = newOrderRef.key; // Use Firebase generated ID
-        newOrderRef.set(order)
-          .then(() => resolve(order))
-          .catch(error => reject(error));
-      });
-    }
-
-    // Update order status in Firebase
-    function updateOrderStatus(orderId, status) {
-      return database.ref(`orders/${orderId}`).update({ status });
-    }
-
-    // Delete order from Firebase
-    function deleteOrderFromFirebase(orderId) {
-      return database.ref(`orders/${orderId}`).remove();
     }
 
     function generateOrderId() {
@@ -1526,8 +1510,8 @@
     
         // Prepare order data
         const order = {
-          id: document.getElementById('orderId').value,
-          date: new Date().toISOString(), // Use ISO format for Firebase
+          orderId: document.getElementById('orderId').value,
+          date: new Date().toISOString(),
           shopName,
           phone,
           address: document.getElementById('address').value,
@@ -1550,8 +1534,8 @@
         };
     
         // Save to Firebase
-        const orderRef = await database.ref('orders').push();
-        await orderRef.set(order);
+        const newOrderRef = await database.ref('orders').push();
+        await newOrderRef.set(order);
     
         // Generate invoice
         await generateInvoice();
@@ -1787,213 +1771,233 @@
 
     // Admin Panel Functions
     function adminLogin() {
-      const username = adminUsername.value.trim();
-      const password = adminPassword.value.trim();
-      
-      if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-        isAdminLoggedIn = true;
-        showNotification("Admin login successful");
+        const username = adminUsername.value.trim();
+        const password = adminPassword.value.trim();
         
-        // Clear login fields
-        adminUsername.value = '';
-        adminPassword.value = '';
-        
-        // Switch to dashboard tab
-        document.querySelector('.admin-tab[data-tab="dashboard"]').click();
-        
-        // Load admin dashboard data
-        loadAdminDashboard();
-      } else {
-        showNotification("Invalid admin credentials", true);
-      }
+        if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+            isAdminLoggedIn = true;
+            
+            // Save login state to localStorage
+            localStorage.setItem('isAdminLoggedIn', 'true');
+            
+            showNotification("Admin login successful");
+            
+            // Clear login fields
+            adminUsername.value = '';
+            adminPassword.value = '';
+            
+            // Switch to dashboard tab
+            document.querySelector('.admin-tab[data-tab="dashboard"]').click();
+            
+            // Load admin dashboard data
+            loadAdminDashboard();
+        } else {
+            showNotification("Invalid admin credentials", true);
+        }
     }
 
     function adminLogout() {
-      isAdminLoggedIn = false;
-      showNotification("Admin logged out");
-      document.querySelector('.admin-tab[data-tab="login"]').click();
+        isAdminLoggedIn = false;
+        
+        // Remove login state from localStorage
+        localStorage.removeItem('isAdminLoggedIn');
+        
+        showNotification("Admin logged out");
+        document.querySelector('.admin-tab[data-tab="login"]').click();
+    }
+
+    // Check for saved login state on page load
+    function checkLoginState() {
+        const savedLoginState = localStorage.getItem('isAdminLoggedIn');
+        if (savedLoginState === 'true') {
+            isAdminLoggedIn = true;
+            document.querySelector('.admin-tab[data-tab="dashboard"]').click();
+            loadAdminDashboard();
+        }
     }
 
     function loadAdminDashboard() {
-      if (!isAdminLoggedIn) return;
-      
-      // Get filter values
-      const statusFilterValue = statusFilter.value;
-      const dateFilterValue = dateFilter.value;
-      const searchFilterValue = searchFilter.value.toLowerCase();
-      
-      // Get today's date for filtering
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Filter orders
-      let filteredOrders = [...orders];
-      
-      // Apply status filter
-      if (statusFilterValue !== 'all') {
-        filteredOrders = filteredOrders.filter(order => order.status === statusFilterValue);
-      }
-      
-      // Apply date filter
-      switch (dateFilterValue) {
-        case 'today':
-          filteredOrders = filteredOrders.filter(order => {
+        if (!isAdminLoggedIn) return;
+        
+        // Get filter values
+        const statusFilterValue = statusFilter.value;
+        const dateFilterValue = dateFilter.value;
+        const searchFilterValue = searchFilter.value.toLowerCase();
+        
+        // Get today's date for filtering
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Filter orders
+        let filteredOrders = [...orders];
+        
+        // Apply status filter
+        if (statusFilterValue !== 'all') {
+            filteredOrders = filteredOrders.filter(order => order.status === statusFilterValue);
+        }
+        
+        // Apply date filter
+        switch (dateFilterValue) {
+            case 'today':
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date);
+                    orderDate.setHours(0, 0, 0, 0);
+                    return orderDate.getTime() === today.getTime();
+                });
+                break;
+            case 'yesterday':
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date);
+                    orderDate.setHours(0, 0, 0, 0);
+                    return orderDate.getTime() === yesterday.getTime();
+                });
+                break;
+            case 'week':
+                const oneWeekAgo = new Date(today);
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date);
+                    return orderDate >= oneWeekAgo;
+                });
+                break;
+            case 'month':
+                const oneMonthAgo = new Date(today);
+                oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                filteredOrders = filteredOrders.filter(order => {
+                    const orderDate = new Date(order.date);
+                    return orderDate >= oneMonthAgo;
+                });
+                break;
+            // 'all' - no date filtering needed
+        }
+        
+        // Apply search filter
+        if (searchFilterValue) {
+            filteredOrders = filteredOrders.filter(order => 
+                order.orderId.toLowerCase().includes(searchFilterValue) || 
+                order.shopName.toLowerCase().includes(searchFilterValue) || 
+                order.phone.toLowerCase().includes(searchFilterValue)
+            );
+        }
+        
+        // Sort by date (newest first)
+        filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Update stats
+        const todayOrders = orders.filter(order => {
             const orderDate = new Date(order.date);
             orderDate.setHours(0, 0, 0, 0);
             return orderDate.getTime() === today.getTime();
-          });
-          break;
-        case 'yesterday':
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          filteredOrders = filteredOrders.filter(order => {
-            const orderDate = new Date(order.date);
-            orderDate.setHours(0, 0, 0, 0);
-            return orderDate.getTime() === yesterday.getTime();
-          });
-          break;
-        case 'week':
-          const oneWeekAgo = new Date(today);
-          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-          filteredOrders = filteredOrders.filter(order => {
-            const orderDate = new Date(order.date);
-            return orderDate >= oneWeekAgo;
-          });
-          break;
-        case 'month':
-          const oneMonthAgo = new Date(today);
-          oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-          filteredOrders = filteredOrders.filter(order => {
-            const orderDate = new Date(order.date);
-            return orderDate >= oneMonthAgo;
-          });
-          break;
-        // 'all' - no date filtering needed
-      }
-      
-      // Apply search filter
-      if (searchFilterValue) {
-        filteredOrders = filteredOrders.filter(order => 
-          order.id.toLowerCase().includes(searchFilterValue) || 
-          order.shopName.toLowerCase().includes(searchFilterValue) || 
-          order.phone.toLowerCase().includes(searchFilterValue)
-        );
-      }
-      
-      // Sort by date (newest first)
-      filteredOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      // Update stats
-      const todayOrders = orders.filter(order => {
-        const orderDate = new Date(order.date);
-        orderDate.setHours(0, 0, 0, 0);
-        return orderDate.getTime() === today.getTime();
-      });
-      
-      const pendingOrders = orders.filter(order => order.status === 'pending');
-      const deliveredOrders = orders.filter(order => order.status === 'delivered');
-      
-      document.getElementById('todayOrdersStat').textContent = todayOrders.length;
-      document.getElementById('todayRevenueStat').textContent = todayOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2);
-      document.getElementById('pendingOrdersStat').textContent = pendingOrders.length;
-      document.getElementById('deliveredOrdersStat').textContent = deliveredOrders.length;
-      
-      // Load orders table
-      const ordersTableBody = document.getElementById('ordersTableBody');
-      ordersTableBody.innerHTML = '';
-      
-      if (filteredOrders.length === 0) {
-        document.getElementById('noOrdersMessage').style.display = 'block';
-      } else {
-        document.getElementById('noOrdersMessage').style.display = 'none';
-        
-        filteredOrders.forEach(order => {
-          const row = document.createElement('tr');
-          
-          // Get status badge class
-          let statusClass = '';
-          let statusText = '';
-          switch (order.status) {
-            case 'pending':
-              statusClass = 'badge-warning';
-              statusText = 'Pending';
-              break;
-            case 'processing':
-              statusClass = 'badge-primary';
-              statusText = 'Processing';
-              break;
-            case 'delivered':
-              statusClass = 'badge-success';
-              statusText = 'Delivered';
-              break;
-            case 'cancelled':
-              statusClass = 'badge-danger';
-              statusText = 'Cancelled';
-              break;
-          }
-          
-          row.innerHTML = `
-            <td>${order.id}</td>
-            <td>${order.shopName}</td>
-            <td>${order.phone}</td>
-            <td>${order.total.toFixed(2)}</td>
-            <td>
-              <select class="status-select ${statusClass}" data-order-id="${order.id}" value="${order.status}">
-                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
-                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-              </select>
-            </td>
-            <td>${order.date}</td>
-            <td>
-              <div class="order-actions">
-                <button class="action-btn view" data-order-id="${order.id}">👁️ View</button>
-                <button class="action-btn print" data-order-id="${order.id}">🖨️ Print</button>
-                <button class="action-btn delete" data-order-id="${order.id}">🗑️ Delete</button>
-              </div>
-            </td>
-          `;
-          
-          // Add event listeners for status change
-          const statusSelect = row.querySelector('.status-select');
-          statusSelect.addEventListener('change', (e) => {
-            const newStatus = e.target.value;
-            updateOrderStatus(order.id, newStatus)
-              .then(() => {
-                showNotification(`Order status updated to ${newStatus}`);
-                // Update the class for the select element
-                statusSelect.className = 'status-select';
-                switch (newStatus) {
-                  case 'pending':
-                    statusSelect.classList.add('status-pending');
-                    break;
-                  case 'processing':
-                    statusSelect.classList.add('status-processing');
-                    break;
-                  case 'delivered':
-                    statusSelect.classList.add('status-delivered');
-                    break;
-                  case 'cancelled':
-                    statusSelect.classList.add('status-cancelled');
-                    break;
-                }
-              })
-              .catch(error => {
-                console.error("Error updating status:", error);
-                showNotification("Failed to update order status", true);
-                e.target.value = order.status; // Revert to previous value
-              });
-          });
-          
-          // Add event listeners for action buttons
-          row.querySelector('.action-btn.view').addEventListener('click', () => showOrderDetailsModal(order));
-          row.querySelector('.action-btn.print').addEventListener('click', () => printOrder(order));
-          row.querySelector('.action-btn.delete').addEventListener('click', () => deleteOrder(order.id));
-          
-          ordersTableBody.appendChild(row);
         });
-      }
+        
+        const pendingOrders = orders.filter(order => order.status === 'pending');
+        const deliveredOrders = orders.filter(order => order.status === 'delivered');
+        
+        document.getElementById('todayOrdersStat').textContent = todayOrders.length;
+        document.getElementById('todayRevenueStat').textContent = todayOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2);
+        document.getElementById('pendingOrdersStat').textContent = pendingOrders.length;
+        document.getElementById('deliveredOrdersStat').textContent = deliveredOrders.length;
+        
+        // Load orders table
+        const ordersTableBody = document.getElementById('ordersTableBody');
+        ordersTableBody.innerHTML = '';
+        
+        if (filteredOrders.length === 0) {
+            document.getElementById('noOrdersMessage').style.display = 'block';
+        } else {
+            document.getElementById('noOrdersMessage').style.display = 'none';
+            
+            filteredOrders.forEach(order => {
+                const row = document.createElement('tr');
+                
+                // Format date for display
+                const formattedDate = new Date(order.date).toLocaleString();
+                
+                // Get status badge class
+                let statusClass = '';
+                switch (order.status) {
+                    case 'pending':
+                        statusClass = 'status-pending';
+                        break;
+                    case 'processing':
+                        statusClass = 'status-processing';
+                        break;
+                    case 'delivered':
+                        statusClass = 'status-delivered';
+                        break;
+                    case 'cancelled':
+                        statusClass = 'status-cancelled';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td>${order.orderId}</td>
+                    <td>${order.shopName}</td>
+                    <td>${order.phone}</td>
+                    <td>${order.total.toFixed(2)}</td>
+                    <td>
+                        <select class="status-select ${statusClass}" data-order-id="${order.id}">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <div class="order-actions">
+                            <button class="action-btn view" data-order-id="${order.id}">👁️ View</button>
+                            <button class="action-btn print" data-order-id="${order.id}">🖨️ Print</button>
+                            <button class="action-btn delete" data-order-id="${order.id}">🗑️ Delete</button>
+                        </div>
+                    </td>
+                `;
+                
+                // Add event listener for status change
+                const statusSelect = row.querySelector('.status-select');
+                statusSelect.addEventListener('change', function(e) {
+                    const newStatus = e.target.value;
+                    const orderId = this.dataset.orderId;
+                    
+                    // Update status in Firebase
+                    database.ref(`orders/${orderId}`).update({ status: newStatus })
+                        .then(() => {
+                            showNotification(`Order status updated to ${newStatus}`);
+                            
+                            // Update the UI
+                            statusSelect.className = 'status-select';
+                            switch (newStatus) {
+                                case 'pending':
+                                    statusSelect.classList.add('status-pending');
+                                    break;
+                                case 'processing':
+                                    statusSelect.classList.add('status-processing');
+                                    break;
+                                case 'delivered':
+                                    statusSelect.classList.add('status-delivered');
+                                    break;
+                                case 'cancelled':
+                                    statusSelect.classList.add('status-cancelled');
+                                    break;
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error updating status:", error);
+                            showNotification("Failed to update order status", true);
+                            e.target.value = order.status; // Revert to previous value
+                        });
+                });
+                
+                // Add event listeners for action buttons
+                row.querySelector('.action-btn.view').addEventListener('click', () => showOrderDetailsModal(order));
+                row.querySelector('.action-btn.print').addEventListener('click', () => printOrder(order));
+                row.querySelector('.action-btn.delete').addEventListener('click', () => deleteOrder(order.id));
+                
+                ordersTableBody.appendChild(row);
+            });
+        }
     }
 
     function showOrderDetailsModal(order) {
@@ -2001,23 +2005,20 @@
         <div class="order-details">
           <div class="order-details-item">
             <span>Order ID:</span>
-            <span>${order.id}</span>
+            <span>${order.orderId}</span>
           </div>
           <div class="order-details-item">
             <span>Status:</span>
-            <span class="badge ${
-              order.status === 'pending' ? 'badge-warning' : 
-              order.status === 'processing' ? 'badge-primary' : 
-              order.status === 'delivered' ? 'badge-success' : 'badge-danger'
-            }">${
-              order.status === 'pending' ? 'Pending' : 
-              order.status === 'processing' ? 'Processing' : 
-              order.status === 'delivered' ? 'Delivered' : 'Cancelled'
-            }</span>
+            <select class="status-select" id="detailStatusSelect" data-order-id="${order.id}">
+              <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
           </div>
           <div class="order-details-item">
             <span>Date:</span>
-            <span>${order.date}</span>
+            <span>${new Date(order.date).toLocaleString()}</span>
           </div>
           <div class="order-details-item">
             <span>Shop Name:</span>
@@ -2071,15 +2072,53 @@
           <button class="btn btn-primary" onclick="printOrder(${JSON.stringify(order).replace(/"/g, '&quot;')})">
             <span>🖨️ Print Invoice</span>
           </button>
-          <button class="btn btn-success" onclick="updateOrderStatus('${order.id}', 'delivered')">
-            <span>✓ Mark as Delivered</span>
-          </button>
           <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">
             <span>🗑️ Delete Order</span>
           </button>
         </div>
       `;
-      
+  
+      // Add event listener for status change in details modal
+      const statusSelect = document.getElementById('detailStatusSelect');
+      statusSelect.addEventListener('change', function(e) {
+        const newStatus = e.target.value;
+        database.ref(`orders/${order.id}`).update({ status: newStatus })
+          .then(() => {
+            showNotification(`Order status updated to ${newStatus}`);
+            // Update the order in local state
+            const orderIndex = orders.findIndex(o => o.id === order.id);
+            if (orderIndex !== -1) {
+              orders[orderIndex].status = newStatus;
+            }
+            // Reload admin dashboard to reflect changes
+            loadAdminDashboard();
+            // Update the modal with new status
+            showOrderDetailsModal(orders[orderIndex]);
+          })
+          .catch(error => {
+            console.error("Error updating status:", error);
+            showNotification("Failed to update order status", true);
+            e.target.value = order.status; // Revert to previous value
+          });
+      });
+  
+      // Apply status-specific styling
+      statusSelect.className = 'status-select';
+      switch(order.status) {
+        case 'pending':
+          statusSelect.classList.add('status-pending');
+          break;
+        case 'processing':
+          statusSelect.classList.add('status-processing');
+          break;
+        case 'delivered':
+          statusSelect.classList.add('status-delivered');
+          break;
+        case 'cancelled':
+          statusSelect.classList.add('status-cancelled');
+          break;
+      }
+  
       orderModal.style.display = "block";
     }
 
@@ -2123,8 +2162,8 @@
       doc.setFontSize(10);
   
       // Left Aligned - Invoice Details
-      doc.text(`Invoice: ${order.id}`, 15, yPos);
-      doc.text(`Date: ${order.date}`, 15, yPos + 6);
+      doc.text(`Invoice: ${order.orderId}`, 15, yPos);
+      doc.text(`Date: ${new Date(order.date).toLocaleString()}`, 15, yPos + 6);
 
       // Right Aligned - Customer Info
       doc.setFont("helvetica", "bold");
@@ -2241,28 +2280,28 @@
       doc.text(`Status: ${order.status.toUpperCase()}`, 15, yPos);
       
       // Save the PDF
-      const fileName = `${order.id}.pdf`;
+      const fileName = `${order.orderId}.pdf`;
       doc.save(fileName);
     }
 
     function deleteOrder(orderId) {
       if (confirm(`Are you sure you want to delete order ${orderId}? This cannot be undone.`)) {
-        deleteOrderFromFirebase(orderId)
+        database.ref(`orders/${orderId}`).remove()
           .then(() => {
             showNotification(`Order ${orderId} deleted successfully`);
-        
-            // 1. Remove the order from local state (no need to reload)
+    
+            // Remove the order from local state immediately
             orders = orders.filter(order => order.id !== orderId);
-        
-            // 2. Update the admin dashboard table
+    
+            // Update the admin dashboard table
             loadAdminDashboard();
-        
-            // 3. Close the modal if open
+    
+            // Close the modal if open
             if (orderModal.style.display === "block") {
               orderModal.style.display = "none";
             }
-        
-            // 4. Update today's order count
+    
+            // Update today's order count
             const today = new Date().toLocaleDateString();
             totalOrdersToday = orders.filter(order => {
               const orderDate = new Date(order.date).toLocaleDateString();
