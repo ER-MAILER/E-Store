@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Prime E-Store - Order System</title>
+  <title>E-Zone - Order System</title>
   <style>
+    @font-face {
+      font-family: 'Bangla';
+      src: url('bangla.ttf') format('truetype');
+    }
+    
     :root {
-      --primary: #4361ee;
-      --primary-dark: #3a0ca3;
-      --secondary: #f72585;
-      --success: #4cc9f0;
-      --danger: #f94144;
-      --warning: #f8961e;
-      --light: #f8f9fa;
-      --dark: #212529;
+      --primary: #FF6B35;
+      --primary-dark: #E85D04;
+      --secondary: #4ECDC4;
+      --success: #1A535C;
+      --danger: #FF6B6B;
+      --warning: #FFE66D;
+      --light: #F7F7F7;
+      --dark: #292F36;
       --gray: #6c757d;
       --light-gray: #e9ecef;
       --white: #ffffff;
@@ -45,7 +50,7 @@
       padding: 15px 0;
       text-align: center;
       border-radius: 0 0 15px 15px;
-      box-shadow: 0 4px 20px rgba(67, 97, 238, 0.3);
+      box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
       margin-bottom: 20px;
       position: relative;
     }
@@ -181,12 +186,22 @@
     input:focus, textarea:focus, select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
     }
     
     .readonly-input {
       background-color: var(--light-gray);
       cursor: not-allowed;
+    }
+    
+    .search-container {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #f5f7ff;
+      padding: 15px 0;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--light-gray);
     }
     
     .search-box {
@@ -333,7 +348,7 @@
     }
     
     .add-12-btn:hover {
-      background: #d61a6b;
+      background: #3ab7af;
     }
     
     .summary-item {
@@ -365,6 +380,12 @@
       display: flex;
       gap: 12px;
       margin-top: 20px;
+      position: sticky;
+      bottom: 15px;
+      z-index: 99;
+      background: #f5f7ff;
+      padding: 10px 0;
+      border-top: 1px solid var(--light-gray);
     }
     
     .btn {
@@ -390,7 +411,7 @@
     .btn-primary:hover {
       background: var(--primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+      box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
     }
     
     .btn-primary:disabled {
@@ -406,9 +427,9 @@
     }
     
     .btn-danger:hover {
-      background: #d03437;
+      background: #e05c5c;
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(248, 65, 68, 0.3);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
     }
     
     .btn-success {
@@ -417,20 +438,20 @@
     }
     
     .btn-success:hover {
-      background: #3ab7d8;
+      background: #154148;
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+      box-shadow: 0 5px 15px rgba(26, 83, 92, 0.3);
     }
     
     .btn-warning {
       background: var(--warning);
-      color: var(--white);
+      color: var(--dark);
     }
     
     .btn-warning:hover {
-      background: #e68a19;
+      background: #e6d462;
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(248, 150, 30, 0.3);
+      box-shadow: 0 5px 15px rgba(255, 230, 109, 0.3);
     }
     
     .badge {
@@ -455,7 +476,7 @@
     
     .badge-warning {
       background: var(--warning);
-      color: var(--white);
+      color: var(--dark);
     }
     
     .badge-danger {
@@ -657,7 +678,7 @@
     }
     
     .orders-table tr:hover {
-      background-color: rgba(67, 97, 238, 0.05);
+      background-color: rgba(255, 107, 53, 0.05);
     }
     
     .order-details {
@@ -744,7 +765,7 @@
     }
     
     .logout-btn:hover {
-      background: #d03437;
+      background: #e05c5c;
     }
     
     .filter-controls {
@@ -846,6 +867,64 @@
       color: var(--gray);
       font-size: 1.1rem;
     }
+    
+    /* Preview Modal Styles */
+    .preview-modal {
+      display: none;
+      position: fixed;
+      z-index: 1004;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      overflow: auto;
+    }
+    
+    .preview-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    
+    .preview-close {
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #aaa;
+      cursor: pointer;
+    }
+    
+    .preview-close:hover {
+      color: var(--danger);
+    }
+    
+    .preview-title {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-weight: 700;
+      text-align: center;
+    }
+    
+    .preview-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .preview-buttons .btn {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -853,8 +932,8 @@
     <div class="container">
       <div class="header-content">
         <div class="logo">
-          <span class="logo-icon">📦</span>
-          <span>Prime E-Store</span>
+          <span class="logo-icon">🛒</span>
+          <span>E-Zone</span>
         </div>
         <button class="admin-btn" id="adminBtn">
           <span>🔒</span>
@@ -869,6 +948,19 @@
   <div id="imageModal" class="modal">
     <span class="close">&times;</span>
     <img class="modal-content" id="modalImage">
+  </div>
+  
+  <!-- Preview Modal -->
+  <div id="previewModal" class="preview-modal">
+    <div class="preview-content">
+      <span class="preview-close">&times;</span>
+      <h2 class="preview-title">Order Preview</h2>
+      <div id="previewContent"></div>
+      <div class="preview-buttons">
+        <button class="btn btn-success" id="confirmOrderBtn">Confirm Order</button>
+        <button class="btn btn-danger" id="cancelPreviewBtn">Cancel</button>
+      </div>
+    </div>
   </div>
   
   <!-- Admin Panel Modal -->
@@ -978,6 +1070,13 @@
   </div>
   
   <div class="container">
+    <div class="search-container">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search products...">
+      </div>
+    </div>
+    
     <div class="dashboard">
       <div class="card">
         <div class="card-header">
@@ -1027,39 +1126,9 @@
           </h2>
         </div>
         
-        <div class="form-group">
-          <label for="discount">Discount (%)</label>
-          <input type="number" id="discount" min="0" max="100" value="0">
-        </div>
-        
-        <div class="form-group">
-          <label for="vat">VAT (%)</label>
-          <input type="number" id="vat" min="0" max="100" value="0">
-        </div>
-        
-        <div class="form-group">
-          <label for="shipping">Shipping Cost ()</label>
-          <input type="number" id="shipping" min="0" value="0">
-        </div>
-        
         <div class="summary-item">
           <span class="summary-label">Subtotal:</span>
           <span class="summary-value" id="subtotal">0.00</span>
-        </div>
-        
-        <div class="summary-item">
-          <span class="summary-label">Discount:</span>
-          <span class="summary-value" id="discountAmount">-0.00</span>
-        </div>
-        
-        <div class="summary-item">
-          <span class="summary-label">VAT:</span>
-          <span class="summary-value" id="vatAmount">0.00</span>
-        </div>
-        
-        <div class="summary-item">
-          <span class="summary-label">Shipping:</span>
-          <span class="summary-value" id="shippingCost">0.00</span>
         </div>
         
         <div class="total-amount" id="total">
@@ -1076,17 +1145,12 @@
         </h2>
       </div>
       
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Search products...">
-      </div>
-      
       <div class="products-grid" id="productList"></div>
     </div>
     
     <div class="action-buttons">
-      <button class="btn btn-primary" id="submitBtn">
-        <span>Submit Order</span>
+      <button class="btn btn-primary" id="previewBtn">
+        <span>Preview Order</span>
       </button>
       <button class="btn btn-danger" id="cancelBtn">
         <span>Cancel Order</span>
@@ -1116,106 +1180,106 @@
 
     // Products data (extended to 100 items)
     const products = [
-      {id:1,name:"8 Pin Combined Switch Board",price:20.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/8%20Pin%20Combined%20Switch%20Board.jpg"},
-      {id:2,name:"6 Pin Combined Switch Board",price:2.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/6%20Pin%20Combined%20Switch%20Board.png"},
-      {id:3,name:"4 Pin Combined Switch Board",price:1.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/4%20Pin%20Combined%20Switch%20Board.jpg"},
-      {id:4,name:"2 Pin Multi Socket (T. Adapter)",price:1.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2%20Pin%20Multi%20Socket%20(T.%20Adapter).jpg"},
-      {id:5,name:"2 Pin  Round Plug",price:3.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2%20Pin%20%20Round%20Plug.jpg"},
-      {id:6,name:"3 Pin Plug 16 Amp",price:1.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/3%20Pin%20Plug%2016%20Amp.jpg"},
-      {id:7,name:"3 Pin Plug 13 Amp",price:15.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/3%20Pin%20Plug%2013%20Amp.jpg"},
-      {id:8,name:"2-Pin-Plug-High-Quality-Msr",price:20.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2-Pin-Plug-High-Quality-Msr.jpg"},
-      {id:9,name:"2-Pin-Plug-High-Quality",price:8.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2-Pin-Plug-High-Quality.jpg"},
-      {id:10,name:"3 Pin Mini Round Pin Industrial Unfused Small Minis Plug",price:120.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2MP%203%20Pin%20Mini%20Round%20Pin%20Industrial%20Unfused%20Small%20Minis%20Plug.jpg"},
-      {id:11,name:"Switch",price:50.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Switch.jpg"},
-      {id:12,name:"Socket",price:350.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Socket.png"},
-      {id:13,name:"Regulator",price:0.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Regulator.jpg"},
-      {id:14,name:"Indicator",price:0.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Indicator.jpg"},
-      {id:15,name:"Fuse Cut Out  Switch",price:3.50,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Fuse%20Cut%20Out%20%20Switch.jpg"},
-      {id:16,name:"Electric Tape",price:5.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Electric%20Tape.jpeg"},
-      {id:17,name:"Neon tester",price:1.20,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Neon%20tester.png"},
-      {id:18,name:"Philips Electric Tester (AC Indicator - Voltage Detector)",price:1.20,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Philips%20Electric%20Tester%20(AC%20Indicator%20-%20Voltage%20Detector).jpg"},
-      {id:19,name:"Tester 2 in 1 One tester for two devices!",price:4.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Tester%202%20in%201%20One%20tester%20for%20two%20devices!.jpg"},
-      {id:20,name:"Circuit Breaker Box (One Way)",price:25.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Circuit%20Breaker%20Box%20(One%20Way).jpg"},
-      {id:21,name:"1 Gang Outer Box",price:15.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/1%20Gang%20Outer%20Box.png"},
-      {id:22,name:"2 Gang Outer Box",price:10.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2%20Gang%20Outer%20Box.png"},
-      {id:23,name:"3 Gang Outer Box",price:25.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/3%20Gang%20Outer%20Box.png"},
-      {id:24,name:"1 Switch Modular Box",price:12.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/1%20Switch%20Modular%20Box.png"},
-      {id:25,name:"2 Switch Modular Box",price:15.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/2%20Switch%20Modular%20Box.jpg"},
-      {id:26,name:"3 Switch Modular Box",price:45.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/3%20Switch%20Modular%20Box.png"},
-      {id:27,name:"4 Switch Modular Box",price:30.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/4%20Switch%20Modular%20Box.jpg"},
-      {id:28,name:"14/76 Flexible Electrical Wire Twisted Copper Cable Red Black Pair",price:2.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/1476%20Flexible%20Electrical%20Wire%20Twisted%20Copper%20Cable%20Red%20Black%20Pair.png"},
-      {id:29,name:"Aluminum Cable 7+7 Gej",price:80.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Aluminum%20Cable%207%2B7%20Gej.jpg"},
-      {id:30,name:"Twin Core Electric Cable - 1 Coil 23 76",price:120.00,img:"https://raw.githubusercontent.com/ER-MAILER/E-Store/main/StoreIcon/Twin%20Core%20Electric%20Cable%20-%201%20Coil%2023%2076.webp"},
-      {id:31,name:"Copper Wire 1mm",price:3.50,img:"https://via.placeholder.com/150?text=Copper+Wire"},
-      {id:32,name:"Copper Wire 2mm",price:5.00,img:"https://via.placeholder.com/150?text=Copper+Wire+2mm"},
-      {id:33,name:"Extension Cord 5m",price:12.00,img:"https://via.placeholder.com/150?text=Extension+Cord"},
-      {id:34,name:"Extension Cord 10m",price:20.00,img:"https://via.placeholder.com/150?text=Extension+Cord+10m"},
-      {id:35,name:"Power Strip 4 Port",price:15.00,img:"https://via.placeholder.com/150?text=Power+Strip"},
-      {id:36,name:"Power Strip 6 Port",price:22.00,img:"https://via.placeholder.com/150?text=Power+Strip+6"},
-      {id:37,name:"LED Bulb 5W",price:4.50,img:"https://via.placeholder.com/150?text=LED+Bulb"},
-      {id:38,name:"LED Bulb 10W",price:7.00,img:"https://via.placeholder.com/150?text=LED+Bulb+10W"},
-      {id:39,name:"CFL Bulb 15W",price:3.50,img:"https://via.placeholder.com/150?text=CFL+Bulb"},
-      {id:40,name:"CFL Bulb 20W",price:5.00,img:"https://via.placeholder.com/150?text=CFL+Bulb+20W"},
-      {id:41,name:"Tube Light 20W",price:8.00,img:"https://via.placeholder.com/150?text=Tube+Light"},
-      {id:42,name:"Tube Light 40W",price:12.00,img:"https://via.placeholder.com/150?text=Tube+Light+40W"},
-      {id:43,name:"Choke 20W",price:6.00,img:"https://via.placeholder.com/150?text=Choke+20W"},
-      {id:44,name:"Choke 40W",price:9.00,img:"https://via.placeholder.com/150?text=Choke+40W"},
-      {id:45,name:"Starter for Tube Light",price:1.50,img:"https://via.placeholder.com/150?text=Starter"},
-      {id:46,name:"Ceiling Fan Regulator",price:7.00,img:"https://via.placeholder.com/150?text=Fan+Regulator"},
-      {id:47,name:"Wall Fan Regulator",price:6.00,img:"https://via.placeholder.com/150?text=Wall+Fan+Regulator"},
-      {id:48,name:"Ceiling Fan Capacitor",price:3.00,img:"https://via.placeholder.com/150?text=Fan+Capacitor"},
-      {id:49,name:"Table Fan Capacitor",price:2.50,img:"https://via.placeholder.com/150?text=Table+Fan+Capacitor"},
-      {id:50,name:"Exhaust Fan",price:25.00,img:"https://via.placeholder.com/150?text=Exhaust+Fan"},
-      {id:51,name:"Table Fan",price:35.00,img:"https://via.placeholder.com/150?text=Table+Fan"},
-      {id:52,name:"Pedestal Fan",price:45.00,img:"https://via.placeholder.com/150?text=Pedestal+Fan"},
-      {id:53,name:"Wall Fan",price:30.00,img:"https://via.placeholder.com/150?text=Wall+Fan"},
-      {id:54,name:"Cooling Fan",price:15.00,img:"https://via.placeholder.com/150?text=Cooling+Fan"},
-      {id:55,name:"Fan Blade 1200mm",price:12.00,img:"https://via.placeholder.com/150?text=Fan+Blade"},
-      {id:56,name:"Fan Blade 900mm",price:10.00,img:"https://via.placeholder.com/150?text=Fan+Blade+900"},
-      {id:57,name:"Fan Blade 600mm",price:8.00,img:"https://via.placeholder.com/150?text=Fan+Blade+600"},
-      {id:58,name:"Fan Guard",price:5.00,img:"https://via.placeholder.com/150?text=Fan+Guard"},
-      {id:59,name:"Fan Motor",price:40.00,img:"https://via.placeholder.com/150?text=Fan+Motor"},
-      {id:60,name:"Fan Speed Controller",price:8.00,img:"https://via.placeholder.com/150?text=Fan+Controller"},
-      {id:61,name:"Iron Box",price:25.00,img:"https://via.placeholder.com/150?text=Iron+Box"},
-      {id:62,name:"Water Heater",price:50.00,img:"https://via.placeholder.com/150?text=Water+Heater"},
-      {id:63,name:"Immersion Rod",price:15.00,img:"https://via.placeholder.com/150?text=Immersion+Rod"},
-      {id:64,name:"Electric Kettle",price:30.00,img:"https://via.placeholder.com/150?text=Electric+Kettle"},
-      {id:65,name:"Toaster",price:20.00,img:"https://via.placeholder.com/150?text=Toaster"},
-      {id:66,name:"Mixer Grinder",price:60.00,img:"https://via.placeholder.com/150?text=Mixer+Grinder"},
-      {id:67,name:"Juicer",price:35.00,img:"https://via.placeholder.com/150?text=Juicer"},
-      {id:68,name:"Blender",price:40.00,img:"https://via.placeholder.com/150?text=Blender"},
-      {id:69,name:"Rice Cooker",price:45.00,img:"https://via.placeholder.com/150?text=Rice+Cooker"},
-      {id:70,name:"Induction Cooker",price:55.00,img:"https://via.placeholder.com/150?text=Induction+Cooker"},
-      {id:71,name:"Microwave Oven",price:120.00,img:"https://via.placeholder.com/150?text=Microwave"},
-      {id:72,name:"Electric Oven",price:80.00,img:"https://via.placeholder.com/150?text=Electric+Oven"},
-      {id:73,name:"Sandwich Maker",price:25.00,img:"https://via.placeholder.com/150?text=Sandwich+Maker"},
-      {id:74,name:"Popcorn Maker",price:30.00,img:"https://via.placeholder.com/150?text=Popcorn+Maker"},
-      {id:75,name:"Coffee Maker",price:40.00,img:"https://via.placeholder.com/150?text=Coffee+Maker"},
-      {id:76,name:"Electric Grill",price:35.00,img:"https://via.placeholder.com/150?text=Electric+Grill"},
-      {id:77,name:"Electric Chimney",price:90.00,img:"https://via.placeholder.com/150?text=Electric+Chimney"},
-      {id:78,name:"Exhaust Hood",price:70.00,img:"https://via.placeholder.com/150?text=Exhaust+Hood"},
-      {id:79,name:"Water Purifier",price:65.00,img:"https://via.placeholder.com/150?text=Water+Purifier"},
-      {id:80,name:"Air Purifier",price:85.00,img:"https://via.placeholder.com/150?text=Air+Purifier"},
-      {id:81,name:"Humidifier",price:45.00,img:"https://via.placeholder.com/150?text=Humidifier"},
-      {id:82,name:"Dehumidifier",price:75.00,img:"https://via.placeholder.com/150?text=Dehumidifier"},
-      {id:83,name:"Air Cooler",price:65.00,img:"https://via.placeholder.com/150?text=Air+Cooler"},
-      {id:84,name:"Air Conditioner",price:250.00,img:"https://via.placeholder.com/150?text=AC"},
-      {id:85,name:"Refrigerator",price:300.00,img:"https://via.placeholder.com/150?text=Fridge"},
-      {id:86,name:"Washing Machine",price:200.00,img:"https://via.placeholder.com/150?text=Washing+Machine"},
-      {id:87,name:"Dish Washer",price:180.00,img:"https://via.placeholder.com/150?text=Dish+Washer"},
-      {id:88,name:"Vacuum Cleaner",price:70.00,img:"https://via.placeholder.com/150?text=Vacuum+Cleaner"},
-      {id:89,name:"Steam Iron",price:35.00,img:"https://via.placeholder.com/150?text=Steam+Iron"},
-      {id:90,name:"Sewing Machine",price:90.00,img:"https://via.placeholder.com/150?text=Sewing+Machine"},
-      {id:91,name:"Hair Dryer",price:20.00,img:"https://via.placeholder.com/150?text=Hair+Dryer"},
-      {id:92,name:"Hair Straightener",price:25.00,img:"https://via.placeholder.com/150?text=Hair+Straightener"},
-      {id:93,name:"Electric Shaver",price:30.00,img:"https://via.placeholder.com/150?text=Electric+Shaver"},
-      {id:94,name:"Electric Toothbrush",price:15.00,img:"https://via.placeholder.com/150?text=Electric+Toothbrush"},
-      {id:95,name:"Massager",price:25.00,img:"https://via.placeholder.com/150?text=Massager"},
-      {id:96,name:"Blood Pressure Monitor",price:40.00,img:"https://via.placeholder.com/150?text=BP+Monitor"},
-      {id:97,name:"Weighing Scale",price:20.00,img:"https://via.placeholder.com/150?text=Weighing+Scale"},
-      {id:98,name:"Thermometer",price:5.00,img:"https://via.placeholder.com/150?text=Thermometer"},
-      {id:99,name:"Pedometer",price:15.00,img:"https://via.placeholder.com/150?text=Pedometer"},
-      {id:100,name:"Smart Watch",price:50.00,img:"https://via.placeholder.com/150?text=Smart+Watch"}
+      {id:1,name:"8 Pin Combined Switch Board",price:20.50},
+      {id:2,name:"6 Pin Combined Switch Board",price:2.50},
+      {id:3,name:"4 Pin Combined Switch Board",price:1.00},
+      {id:4,name:"2 Pin Multi Socket (T. Adapter)",price:1.00},
+      {id:5,name:"2 Pin  Round Plug",price:3.00},
+      {id:6,name:"3 Pin Plug 16 Amp",price:1.50},
+      {id:7,name:"3 Pin Plug 13 Amp",price:15.00},
+      {id:8,name:"2-Pin-Plug-High-Quality-Msr",price:20.00},
+      {id:9,name:"2-Pin-Plug-High-Quality",price:8.00},
+      {id:10,name:"3 Pin Mini Round Pin Industrial Unfused Small Minis Plug",price:120.00},
+      {id:11,name:"Switch",price:50.00},
+      {id:12,name:"Socket",price:350.00},
+      {id:13,name:"Regulator",price:0.50},
+      {id:14,name:"Indicator",price:0.50},
+      {id:15,name:"Fuse Cut Out  Switch",price:3.50},
+      {id:16,name:"Electric Tape",price:5.00},
+      {id:17,name:"Neon tester",price:1.20},
+      {id:18,name:"Philips Electric Tester (AC Indicator - Voltage Detector)",price:1.20},
+      {id:19,name:"Tester 2 in 1 One tester for two devices!",price:4.00},
+      {id:20,name:"Circuit Breaker Box (One Way)",price:25.00},
+      {id:21,name:"1 Gang Outer Box",price:15.00},
+      {id:22,name:"2 Gang Outer Box",price:10.00},
+      {id:23,name:"3 Gang Outer Box",price:25.00},
+      {id:24,name:"1 Switch Modular Box",price:12.00},
+      {id:25,name:"2 Switch Modular Box",price:15.00},
+      {id:26,name:"3 Switch Modular Box",price:45.00},
+      {id:27,name:"4 Switch Modular Box",price:30.00},
+      {id:28,name:"14/76 Flexible Electrical Wire Twisted Copper Cable Red Black Pair",price:2.00},
+      {id:29,name:"Aluminum Cable 7+7 Gej",price:80.00},
+      {id:30,name:"Twin Core Electric Cable - 1 Coil 23 76",price:120.00},
+      {id:31,name:"Copper Wire 1mm",price:3.50},
+      {id:32,name:"Copper Wire 2mm",price:5.00},
+      {id:33,name:"Extension Cord 5m",price:12.00},
+      {id:34,name:"Extension Cord 10m",price:20.00},
+      {id:35,name:"Power Strip 4 Port",price:15.00},
+      {id:36,name:"Power Strip 6 Port",price:22.00},
+      {id:37,name:"LED Bulb 5W",price:4.50},
+      {id:38,name:"LED Bulb 10W",price:7.00},
+      {id:39,name:"CFL Bulb 15W",price:3.50},
+      {id:40,name:"CFL Bulb 20W",price:5.00},
+      {id:41,name:"Tube Light 20W",price:8.00},
+      {id:42,name:"Tube Light 40W",price:12.00},
+      {id:43,name:"Choke 20W",price:6.00},
+      {id:44,name:"Choke 40W",price:9.00},
+      {id:45,name:"Starter for Tube Light",price:1.50},
+      {id:46,name:"Ceiling Fan Regulator",price:7.00},
+      {id:47,name:"Wall Fan Regulator",price:6.00},
+      {id:48,name:"Ceiling Fan Capacitor",price:3.00},
+      {id:49,name:"Table Fan Capacitor",price:2.50},
+      {id:50,name:"Exhaust Fan",price:25.00},
+      {id:51,name:"Table Fan",price:35.00},
+      {id:52,name:"Pedestal Fan",price:45.00},
+      {id:53,name:"Wall Fan",price:30.00},
+      {id:54,name:"Cooling Fan",price:15.00},
+      {id:55,name:"Fan Blade 1200mm",price:12.00},
+      {id:56,name:"Fan Blade 900mm",price:10.00},
+      {id:57,name:"Fan Blade 600mm",price:8.00},
+      {id:58,name:"Fan Guard",price:5.00},
+      {id:59,name:"Fan Motor",price:40.00},
+      {id:60,name:"Fan Speed Controller",price:8.00},
+      {id:61,name:"Iron Box",price:25.00},
+      {id:62,name:"Water Heater",price:50.00},
+      {id:63,name:"Immersion Rod",price:15.00},
+      {id:64,name:"Electric Kettle",price:30.00},
+      {id:65,name:"Toaster",price:20.00},
+      {id:66,name:"Mixer Grinder",price:60.00},
+      {id:67,name:"Juicer",price:35.00},
+      {id:68,name:"Blender",price:40.00},
+      {id:69,name:"Rice Cooker",price:45.00},
+      {id:70,name:"Induction Cooker",price:55.00},
+      {id:71,name:"Microwave Oven",price:120.00},
+      {id:72,name:"Electric Oven",price:80.00},
+      {id:73,name:"Sandwich Maker",price:25.00},
+      {id:74,name:"Popcorn Maker",price:30.00},
+      {id:75,name:"Coffee Maker",price:40.00},
+      {id:76,name:"Electric Grill",price:35.00},
+      {id:77,name:"Electric Chimney",price:90.00},
+      {id:78,name:"Exhaust Hood",price:70.00},
+      {id:79,name:"Water Purifier",price:65.00},
+      {id:80,name:"Air Purifier",price:85.00},
+      {id:81,name:"Humidifier",price:45.00},
+      {id:82,name:"Dehumidifier",price:75.00},
+      {id:83,name:"Air Cooler",price:65.00},
+      {id:84,name:"Air Conditioner",price:250.00},
+      {id:85,name:"Refrigerator",price:300.00},
+      {id:86,name:"Washing Machine",price:200.00},
+      {id:87,name:"Dish Washer",price:180.00},
+      {id:88,name:"Vacuum Cleaner",price:70.00},
+      {id:89,name:"Steam Iron",price:35.00},
+      {id:90,name:"Sewing Machine",price:90.00},
+      {id:91,name:"Hair Dryer",price:20.00},
+      {id:92,name:"Hair Straightener",price:25.00},
+      {id:93,name:"Electric Shaver",price:30.00},
+      {id:94,name:"Electric Toothbrush",price:15.00},
+      {id:95,name:"Massager",price:25.00},
+      {id:96,name:"Blood Pressure Monitor",price:40.00},
+      {id:97,name:"Weighing Scale",price:20.00},
+      {id:98,name:"Thermometer",price:5.00},
+      {id:99,name:"Pedometer",price:15.00},
+      {id:100,name:"Smart Watch",price:50.00}
     ];
 
     const cart = new Map();
@@ -1243,6 +1307,14 @@
     const orderModalClose = document.querySelector('.order-modal-close');
     const orderDetailsContent = document.getElementById('orderDetailsContent');
     
+    // Preview modal variables
+    const previewModal = document.getElementById('previewModal');
+    const previewCloseBtn = document.querySelector('.preview-close');
+    const previewContent = document.getElementById('previewContent');
+    const confirmOrderBtn = document.getElementById('confirmOrderBtn');
+    const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    
     let isAdminLoggedIn = false;
     let orders = [];
     
@@ -1262,10 +1334,7 @@
         setOrderDate();
       
       // Add event listeners
-      document.getElementById('discount').addEventListener('input', updateTotal);
-      document.getElementById('vat').addEventListener('input', updateTotal);
-      document.getElementById('shipping').addEventListener('input', updateTotal);
-      document.getElementById('submitBtn').addEventListener('click', submitOrder);
+      document.getElementById('previewBtn').addEventListener('click', showPreview);
       document.getElementById('cancelBtn').addEventListener('click', resetForm);
       searchInput.addEventListener('input', filterProducts);
       
@@ -1281,6 +1350,9 @@
         if (event.target == orderModal) {
           orderModal.style.display = "none";
         }
+        if (event.target == previewModal) {
+          previewModal.style.display = "none";
+        }
       }
       
       // Admin panel event listeners
@@ -1294,6 +1366,9 @@
       
       logoutBtn.addEventListener('click', adminLogout);
       orderModalClose.addEventListener('click', () => orderModal.style.display = "none");
+      previewCloseBtn.addEventListener('click', () => previewModal.style.display = "none");
+      cancelPreviewBtn.addEventListener('click', () => previewModal.style.display = "none");
+      confirmOrderBtn.addEventListener('click', submitOrder);
       
       adminTabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -1363,7 +1438,7 @@
                        (now.getMonth() + 1).toString().padStart(2, '0') + 
                        now.getDate().toString().padStart(2, '0');
       const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-      document.getElementById('orderId').value = `E-Store_${datePart}-${randomPart}`;
+      document.getElementById('orderId').value = `E-Zone_${datePart}-${randomPart}`;
     }
 
     function setOrderDate() {
@@ -1397,19 +1472,10 @@
         if (p) subtotal += p.price * qty;
       });
       
-      const discount = parseFloat(document.getElementById('discount').value) || 0;
-      const vat = parseFloat(document.getElementById('vat').value) || 0;
-      const shipping = parseFloat(document.getElementById('shipping').value) || 0;
-      
-      const discountAmount = subtotal * discount / 100;
-      const vatAmount = subtotal * vat / 100;
-      const total = subtotal - discountAmount + vatAmount + shipping;
+      const total = subtotal;
       
       // Update summary display
       document.getElementById('subtotal').textContent = `${subtotal.toFixed(2)}`;
-      document.getElementById('discountAmount').textContent = `-${discountAmount.toFixed(2)}`;
-      document.getElementById('vatAmount').textContent = `${vatAmount.toFixed(2)}`;
-      document.getElementById('shippingCost').textContent = `${shipping.toFixed(2)}`;
       document.getElementById('total').textContent = `Total: ${total.toFixed(2)}`;
     }
 
@@ -1451,9 +1517,22 @@
         const qty = cart.get(p.id) || 0;
         const div = document.createElement('div');
         div.className = 'product-card';
+        
+        // Try to load image from local folder with various extensions
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        let imageHTML = '';
+        
+        for (let ext of imageExtensions) {
+          imageHTML = `<img src="id${p.id}${ext}" alt="${p.name}" class="product-image" onclick="zoomImage('id${p.id}${ext}')" onerror="this.style.display='none'">`;
+          // We'll let the onerror handle if the image doesn't exist
+        }
+        
         div.innerHTML = `
           <div class="product-image-container">
-            <img src="${p.img}" alt="${p.name}" class="product-image" onclick="zoomImage('${p.img}')" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0wIDBoMjAwdjEyMEgweiIgZmlsbD0iI2Y1ZjVmNSIvPgo8dGV4dCB4PSIxMDAiIHk9IjYwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNjY2MiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pgo8L3N2Zz4='">
+            ${imageHTML}
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999; font-size: 14px; padding: 10px; text-align: center;">
+              No Image Available
+            </div>
           </div>
           <div class="product-body">
             <h3 class="product-title">${p.name}</h3>
@@ -1480,7 +1559,7 @@
       return regex.test(phone.replace(/\s+/g, ''));
     }
 
-    async function submitOrder() {
+    function showPreview() {
       const shopName = document.getElementById('shopName').value.trim();
       const phone = document.getElementById('phone').value.trim();
   
@@ -1502,9 +1581,95 @@
         return;
       }
   
+      // Prepare order data for preview
+      const order = {
+        orderId: document.getElementById('orderId').value,
+        date: new Date().toLocaleString(),
+        shopName,
+        phone,
+        address: document.getElementById('address').value,
+        notes: document.getElementById('notes').value,
+        products: Array.from(cart.entries()).map(([id, qty]) => {
+          const product = products.find(p => p.id === id);
+          return {
+            id,
+            name: product.name,
+            price: product.price,
+            quantity: qty
+          };
+        }),
+        subtotal: parseFloat(document.getElementById('subtotal').textContent),
+        total: parseFloat(document.getElementById('total').textContent.replace('Total: ', ''))
+      };
+  
+      // Generate preview HTML
+      let previewHTML = `
+        <div class="order-details">
+          <div class="order-details-item">
+            <span>Order ID:</span>
+            <span>${order.orderId}</span>
+          </div>
+          <div class="order-details-item">
+            <span>Date:</span>
+            <span>${order.date}</span>
+          </div>
+          <div class="order-details-item">
+            <span>Shop Name:</span>
+            <span>${order.shopName}</span>
+          </div>
+          <div class="order-details-item">
+            <span>Phone:</span>
+            <span>${order.phone}</span>
+          </div>
+      `;
+      
+      if (order.address) {
+        previewHTML += `
+          <div class="order-details-item">
+            <span>Address:</span>
+            <span>${order.address}</span>
+          </div>
+        `;
+      }
+      
+      if (order.notes) {
+        previewHTML += `
+          <div class="order-details-item">
+            <span>Notes:</span>
+            <span>${order.notes}</span>
+          </div>
+        `;
+      }
+      
+      previewHTML += `
+          <div class="order-products">
+            <h4>Products:</h4>
+            ${order.products.map(product => `
+              <div class="order-product">
+                <span>${product.name}</span>
+                <span>${product.quantity} × ${product.price.toFixed(2)} = ${(product.quantity * product.price).toFixed(2)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="order-details-item">
+            <span>Subtotal:</span>
+            <span>${order.subtotal.toFixed(2)}</span>
+          </div>
+          <div class="order-details-item" style="font-weight: bold;">
+            <span>Total:</span>
+            <span>${order.total.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+      
+      previewContent.innerHTML = previewHTML;
+      previewModal.style.display = "block";
+    }
+
+    async function submitOrder() {
       try {
         // Disable submit button during processing
-        const submitBtn = document.getElementById('submitBtn');
+        const submitBtn = document.getElementById('confirmOrderBtn');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<div class="spinner"></div> Processing...';
     
@@ -1512,8 +1677,8 @@
         const order = {
           orderId: document.getElementById('orderId').value,
           date: new Date().toISOString(),
-          shopName,
-          phone,
+          shopName: document.getElementById('shopName').value,
+          phone: document.getElementById('phone').value,
           address: document.getElementById('address').value,
           notes: document.getElementById('notes').value,
           products: Array.from(cart.entries()).map(([id, qty]) => {
@@ -1526,9 +1691,6 @@
             };
           }),
           subtotal: parseFloat(document.getElementById('subtotal').textContent),
-          discount: parseFloat(document.getElementById('discountAmount').textContent.replace('-', '')),
-          vat: parseFloat(document.getElementById('vatAmount').textContent),
-          shipping: parseFloat(document.getElementById('shippingCost').textContent),
           total: parseFloat(document.getElementById('total').textContent.replace('Total: ', '')),
           status: 'pending'
         };
@@ -1549,14 +1711,17 @@
     
         // Reset form for new order
         resetForm();
+        
+        // Close preview modal
+        previewModal.style.display = "none";
     
       } catch (error) {
         console.error("Error submitting order:", error);
         showNotification("Error processing order. Please check your internet connection and try again.", true);
       } finally {
-        const submitBtn = document.getElementById('submitBtn');
+        const submitBtn = document.getElementById('confirmOrderBtn');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Submit Order';
+        submitBtn.innerHTML = 'Confirm Order';
       }
     }
 
@@ -1574,7 +1739,7 @@
     
         // Set font and colors
         doc.setFont("helvetica");
-        const primaryColor = [67, 97, 238];
+        const primaryColor = [255, 107, 53];
         const textColor = [33, 37, 41];
     
         // Header Background
@@ -1585,7 +1750,7 @@
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(20);
-        doc.text('PRIME E-STORE', 15, 12);
+        doc.text('E-ZONE', 15, 12);
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
@@ -1682,29 +1847,11 @@
         doc.setDrawColor(200, 200, 200);
         doc.line(120, yPos, 195, yPos);
         
-        const discount = parseFloat(document.getElementById('discount').value) || 0;
-        const vat = parseFloat(document.getElementById('vat').value) || 0;
-        const shipping = parseFloat(document.getElementById('shipping').value) || 0;
-        
-        const discountAmount = subtotal * discount / 100;
-        const vatAmount = subtotal * vat / 100;
-        const total = subtotal - discountAmount + vatAmount + shipping;
+        const total = subtotal;
         
         yPos += 10;
         doc.text(`Subtotal:`, 130, yPos);
         doc.text(`${subtotal.toFixed(2)}`, 175, yPos);
-        
-        yPos += 7;
-        doc.text(`Discount (${discount}%):`, 130, yPos);
-        doc.text(`-${discountAmount.toFixed(2)}`, 175, yPos);
-        
-        yPos += 7;
-        doc.text(`VAT (${vat}%):`, 130, yPos);
-        doc.text(`${vatAmount.toFixed(2)}`, 175, yPos);
-        
-        yPos += 7;
-        doc.text(`Shipping:`, 130, yPos);
-        doc.text(`${shipping.toFixed(2)}`, 175, yPos);
         
         // Total
         yPos += 15;
@@ -1731,7 +1878,7 @@
         doc.setTextColor(100, 100, 100);
         doc.setFontSize(9);
         doc.text('Thank you for your business!', 105, yPos, { align: 'center' });
-        doc.text('Prime E-Store - Quality Electronic Components | +880 179-554-1326', 105, yPos + 5, { align: 'center' });
+        doc.text('E-Zone - Quality Electronic Components | +880 179-554-1326', 105, yPos + 5, { align: 'center' });
         
         // Save the PDF
         const fileName = `${document.getElementById('orderId').value}.pdf`;
@@ -1752,9 +1899,6 @@
       document.getElementById('phone').value = '';
       document.getElementById('address').value = '';
       document.getElementById('notes').value = '';
-      document.getElementById('discount').value = '0';
-      document.getElementById('vat').value = '0';
-      document.getElementById('shipping').value = '0';
       document.getElementById('searchInput').value = '';
       
       // Generate new order ID and date
@@ -2051,18 +2195,6 @@
             <span>Subtotal:</span>
             <span>${order.subtotal.toFixed(2)}</span>
           </div>
-          <div class="order-details-item">
-            <span>Discount:</span>
-            <span>-${order.discount.toFixed(2)}</span>
-          </div>
-          <div class="order-details-item">
-            <span>VAT:</span>
-            <span>${order.vat.toFixed(2)}</span>
-          </div>
-          <div class="order-details-item">
-            <span>Shipping:</span>
-            <span>${order.shipping.toFixed(2)}</span>
-          </div>
           <div class="order-details-item" style="font-weight: bold;">
             <span>Total:</span>
             <span>${order.total.toFixed(2)}</span>
@@ -2128,7 +2260,7 @@
   
       // Set font and colors
       doc.setFont("helvetica");
-      const primaryColor = [67, 97, 238];
+      const primaryColor = [255, 107, 53];
       const textColor = [33, 37, 41];
   
       // Header Background
@@ -2139,7 +2271,7 @@
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
-      doc.text('PRIME E-STORE', 15, 12);
+      doc.text('E-ZONE', 15, 12);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
@@ -2235,18 +2367,6 @@
       doc.text(`Subtotal:`, 130, yPos);
       doc.text(`${order.subtotal.toFixed(2)}`, 175, yPos);
       
-      yPos += 7;
-      doc.text(`Discount:`, 130, yPos);
-      doc.text(`-${order.discount.toFixed(2)}`, 175, yPos);
-      
-      yPos += 7;
-      doc.text(`VAT:`, 130, yPos);
-      doc.text(`${order.vat.toFixed(2)}`, 175, yPos);
-      
-      yPos += 7;
-      doc.text(`Shipping:`, 130, yPos);
-      doc.text(`${order.shipping.toFixed(2)}`, 175, yPos);
-      
       // Total
       yPos += 15;
       doc.setFillColor(...primaryColor);
@@ -2271,7 +2391,7 @@
       doc.setTextColor(100, 100, 100);
       doc.setFontSize(9);
       doc.text('Thank you for your business!', 105, yPos, { align: 'center' });
-      doc.text('Prime E-Store - Quality Electronic Components | +880 179-554-1326', 105, yPos + 5, { align: 'center' });
+      doc.text('E-Zone - Quality Electronic Components | +880 179-554-1326', 105, yPos + 5, { align: 'center' });
       
       // Status
       yPos += 15;
@@ -2321,4 +2441,3 @@
   </script>
 </body>
 </html>
-
